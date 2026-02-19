@@ -1,38 +1,31 @@
-name: "poder-judiciario-secao-2"
+name: "Relatorio-Nomeados-TRF3-Completo"
 
-# "actor" no GitHub define quem ou o que inicia a ação
 on:
-  schedule:
-    - cron: '0 9 * * 1-5' # Roda automaticamente de seg a sex às 09:00
   workflow_dispatch: # Permite rodar manualmente a qualquer momento
 
 jobs:
-  pesquisa_trf3:
-    # "is" aqui representa o status de sucesso da execução
+  extracao_detalhada:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: "Checkout do RO-DOU"
+      - name: "Checkout Ro-dou"
         uses: actions/checkout@v4
 
-      - name: "Configurar Ambiente de Pesquisa"
-        # "branch" focado no órgão específico
-        run: |
-          echo "Buscando dados para: TRIBUNAL REGIONAL FEDERAL 3"
-          echo "Setor: PODER JUDICIARIO"
-
-      - name: "Executar Robô de Clipping"
-        # "event" define o período e os termos de busca (Nomeações)
+      - name: "Executar Busca TRF3"
         env:
-          DATA_INICIO: "2025-01-01"
-          DATA_FIM: "2026-02-19"
-          ORGAO_ALVO: "Tribunal Regional Federal da 3ª Região"
-          TERMO_BUSCA: "Nomear|Nomeação"
+          DATA_INICIAL: "2024-12-01"
+          DATA_FINAL: "2026-02-19"
+          # Filtro de Órgão e Localidades solicitadas
+          ORGAO: "TRF3|Tribunal Regional Federal da 3|SJMS|SJSP|Justiça Federal"
+          # Filtro de todos os Cargos e Áreas solicitados
+          CARGOS: "Analista Judiciário|Técnico Judiciário|Agente da Polícia Judiciária|Área Judiciária|Apoio Especializado|Administrativa"
+          # Termo de Nomeação para Seção 2
+          TERMO: "nomear|nomeação|provimento"
           SECAO: "2"
         run: |
-          python main.py --inicio $DATA_INICIO --fim $DATA_FIM --secao $SECAO --busca "$TERMO_BUSCA" --orgao "$ORGAO_ALVO"
+          echo "Iniciando varredura detalhada desde Dezembro/2024..."
+          python main.py --inicio $DATA_INICIAL --fim $DATA_FINAL --secao $SECAO --busca "$TERMO|$CARGOS" --orgao "$ORGAO"
 
-      - name: "Gerar Relatório de Nomeados"
-        # Garante que o status final "is: success" seja atingido
+      - name: "Compilar Relatório Final"
         if: success()
-        run: echo "Relatório de nomeados do TRF3 gerado com sucesso para o período solicitado."
+        run: |
+          echo "ESTRUTURA DO RELATÓRIO: [DATA] | [ATO] | [NOME] | [CARGO/ESPECIALIDADE] | [LOCALIDADE]"
