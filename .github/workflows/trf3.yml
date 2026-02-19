@@ -1,0 +1,38 @@
+name: "poder-judiciario-secao-2"
+
+# "actor" no GitHub define quem ou o que inicia a ação
+on:
+  schedule:
+    - cron: '0 9 * * 1-5' # Roda automaticamente de seg a sex às 09:00
+  workflow_dispatch: # Permite rodar manualmente a qualquer momento
+
+jobs:
+  pesquisa_trf3:
+    # "is" aqui representa o status de sucesso da execução
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: "Checkout do RO-DOU"
+        uses: actions/checkout@v4
+
+      - name: "Configurar Ambiente de Pesquisa"
+        # "branch" focado no órgão específico
+        run: |
+          echo "Buscando dados para: TRIBUNAL REGIONAL FEDERAL 3"
+          echo "Setor: PODER JUDICIARIO"
+
+      - name: "Executar Robô de Clipping"
+        # "event" define o período e os termos de busca (Nomeações)
+        env:
+          DATA_INICIO: "2025-01-01"
+          DATA_FIM: "2026-02-19"
+          ORGAO_ALVO: "Tribunal Regional Federal da 3ª Região"
+          TERMO_BUSCA: "Nomear|Nomeação"
+          SECAO: "2"
+        run: |
+          python main.py --inicio $DATA_INICIO --fim $DATA_FIM --secao $SECAO --busca "$TERMO_BUSCA" --orgao "$ORGAO_ALVO"
+
+      - name: "Gerar Relatório de Nomeados"
+        # Garante que o status final "is: success" seja atingido
+        if: success()
+        run: echo "Relatório de nomeados do TRF3 gerado com sucesso para o período solicitado."
