@@ -1,33 +1,25 @@
-name: "Extrair-Nomeados-TRF3-Completo"
+name: "Relatorio-Nomeados-TRF3-Real"
 
 on:
-  workflow_dispatch: # Permite rodar manualmente clicando no botão
+  workflow_dispatch:
 
 jobs:
-  busca_detalhada:
+  busca_trf3:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout do Repositório"
+      - name: "1. Baixar Codigo"
         uses: actions/checkout@v4
 
-      - name: "Instalar Dependências"
-        run: |
-          pip install -r requirements.txt
+      - name: "2. Instalar Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-      - name: "Executar Robô de Extração TRF3"
-        # O comando abaixo realiza a busca real nos PDFs da Seção 2
+      - name: "3. Instalar Ferramentas (Requests/BS4)"
         run: |
-          python main.py \
-          --inicio 2024-12-01 \
-          --fim 2026-02-19 \
-          --secao 2 \
-          --orgao "TRIBUNAL REGIONAL FEDERAL DA 3ª REGIAO|TRF3|SJMS|SJSP|JUSTIÇA FEDERAL" \
-          --busca "nomear|nomeação|Analista Judiciário|Técnico Judiciário|Polícia Judiciária"
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
-      - name: "Compilar Relatório (Ato, Cargo, Local e Data)"
-        if: success()
+      - name: "4. Executar Busca no Diario Oficial"
         run: |
-          echo "LISTA DE NOMEADOS ENCONTRADOS:"
-          echo "------------------------------------------------------------------"
-          echo "Formato: [DATA] | [ATO Nº] | [NOME] | [CARGO/ESPECIALIDADE] | [LOCAL]"
-          # O robô imprimirá os resultados abaixo desta linha no log
+          python main.py --inicio "01/12/2024" --fim "19/02/2026" --secao "2" --busca "nomear|nomeação|Analista|Técnico|Polícia"
