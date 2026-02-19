@@ -1,31 +1,33 @@
-name: "Relatorio-Nomeados-TRF3-Completo"
+name: "Extrair-Nomeados-TRF3-Completo"
 
 on:
-  workflow_dispatch: # Permite rodar manualmente a qualquer momento
+  workflow_dispatch: # Permite rodar manualmente clicando no botão
 
 jobs:
-  extracao_detalhada:
+  busca_detalhada:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout Ro-dou"
+      - name: "Checkout do Repositório"
         uses: actions/checkout@v4
 
-      - name: "Executar Busca TRF3"
-        env:
-          DATA_INICIAL: "2024-12-01"
-          DATA_FINAL: "2026-02-19"
-          # Filtro de Órgão e Localidades solicitadas
-          ORGAO: "TRF3|Tribunal Regional Federal da 3|SJMS|SJSP|Justiça Federal"
-          # Filtro de todos os Cargos e Áreas solicitados
-          CARGOS: "Analista Judiciário|Técnico Judiciário|Agente da Polícia Judiciária|Área Judiciária|Apoio Especializado|Administrativa"
-          # Termo de Nomeação para Seção 2
-          TERMO: "nomear|nomeação|provimento"
-          SECAO: "2"
+      - name: "Instalar Dependências"
         run: |
-          echo "Iniciando varredura detalhada desde Dezembro/2024..."
-          python main.py --inicio $DATA_INICIAL --fim $DATA_FINAL --secao $SECAO --busca "$TERMO|$CARGOS" --orgao "$ORGAO"
+          pip install -r requirements.txt
 
-      - name: "Compilar Relatório Final"
+      - name: "Executar Robô de Extração TRF3"
+        # O comando abaixo realiza a busca real nos PDFs da Seção 2
+        run: |
+          python main.py \
+          --inicio 2024-12-01 \
+          --fim 2026-02-19 \
+          --secao 2 \
+          --orgao "TRIBUNAL REGIONAL FEDERAL DA 3ª REGIAO|TRF3|SJMS|SJSP|JUSTIÇA FEDERAL" \
+          --busca "nomear|nomeação|Analista Judiciário|Técnico Judiciário|Polícia Judiciária"
+
+      - name: "Compilar Relatório (Ato, Cargo, Local e Data)"
         if: success()
         run: |
-          echo "ESTRUTURA DO RELATÓRIO: [DATA] | [ATO] | [NOME] | [CARGO/ESPECIALIDADE] | [LOCALIDADE]"
+          echo "LISTA DE NOMEADOS ENCONTRADOS:"
+          echo "------------------------------------------------------------------"
+          echo "Formato: [DATA] | [ATO Nº] | [NOME] | [CARGO/ESPECIALIDADE] | [LOCAL]"
+          # O robô imprimirá os resultados abaixo desta linha no log
